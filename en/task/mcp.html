@@ -3,20 +3,22 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="RAG (Retrieval-Augmented Generation)" href="rag.html"><link rel="prev" title="Tool" href="tool.html">
+
+    <meta property="article:modified_time" content="2025-12-26T09:08:54+00:00" /><link rel="index" title="Index" href="../../genindex.html"><link rel="search" title="Search" href="../../search.html"><link rel="next" title="Agent Skills" href="agent-skill.html"><link rel="prev" title="Tool" href="tool.html">
+        <link rel="canonical" href="https://java.agentscope.io/en/task/mcp.html">
         <link rel="prefetch" href="../../_static/logo.svg" as="image">
 
-    <link rel="shortcut icon" href="../../_static/logo.svg"><!-- Generated with Sphinx 7.4.7 and Furo 2025.09.25 -->
+    <link rel="shortcut icon" href="../../_static/logo.svg"><!-- Generated with Sphinx 7.4.7 and Furo 2025.12.19 -->
         <title>MCP (Model Context Protocol) - AgentScope Java</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d75fae25" />
-    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=580074bf" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css?v=13237357" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-thebe.css?v=4fa983c6" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=8dab3a3b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=beecb9f1" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css?v=acb90eab" />
     
     
 
@@ -202,10 +204,10 @@
   <span class="sidebar-brand-text"><span style='font-weight: 700; color: #2196f3;'>AgentScope</span> <br><span style='font-weight: 900; color: #ff5722;'>Java</span></span>
   
 </a><!--
-  ~ Copyright 2024-2025 the original author or authors.
+  ~ Copyright 2024-2026 the original author or authors.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ You may not use this file except in compliance with the License.
+  ~ you may not use this file except in compliance with the License.
   ~ You may obtain a copy of the License at
   ~
   ~     http://www.apache.org/licenses/LICENSE-2.0
@@ -272,8 +274,8 @@
 
         // Define which captions should be displayed based on the selected language
         const languageMapping = {
-            'en': ['Quick Start', 'Advanced Topics', 'Multi Agent'],
-            'zh': ['快速开始', '高级主题', '多智能体']
+            'en': ['Quick Start', 'Features', 'Multi Agent'],
+            'zh': ['快速开始', '功能指南', '多智能体']
         };
 
         const visibleCaptions = languageMapping[lang] || [];
@@ -322,25 +324,31 @@
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/key-concepts.html">Key Concepts</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../quickstart/agent.html">Agent</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">Advanced Topics</span></p>
+<p class="caption" role="heading"><span class="caption-text">Features</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="model.html">Model Integration</a></li>
-<li class="toctree-l1"><a class="reference internal" href="agent-config.html">Agent Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="tool.html">Tool System</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Model Context Protocol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agent-skill.html">Agent Skill</a></li>
 <li class="toctree-l1"><a class="reference internal" href="rag.html">RAG</a></li>
 <li class="toctree-l1"><a class="reference internal" href="hook.html">Hook System</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hitl.html">Human-in-the-Loop</a></li>
 <li class="toctree-l1"><a class="reference internal" href="memory.html">Memory Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="plan.html">Planning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="state.html">State Management</a></li>
+<li class="toctree-l1"><a class="reference internal" href="session.html">Session Management</a></li>
 <li class="toctree-l1"><a class="reference internal" href="multimodal.html">Multimodal</a></li>
 <li class="toctree-l1"><a class="reference internal" href="structured-output.html">Structured Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="studio.html">Studio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="agui.html">AG-UI Protocol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="a2a.html">A2A Protocol</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai-coding.html">Coding with AI</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Multi Agent</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../multi-agent/pipeline.html">Pipeline</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../multi-agent/msghub.html">MsgHub</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../multi-agent/agent-as-tool.html">Agent as Tool</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../multi-agent/multiagent-debate.html">Multi-Agent Debate</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">快速开始</span></p>
@@ -350,26 +358,31 @@
 <li class="toctree-l1"><a class="reference internal" href="../../zh/quickstart/key-concepts.html">核心概念</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/quickstart/agent.html">智能体</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">高级主题</span></p>
+<p class="caption" role="heading"><span class="caption-text">功能指南</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/model.html">模型集成</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../zh/task/agent-config.html">智能体配置</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/tool.html">工具系统</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../zh/task/mcp.html">模型上下文协议</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../zh/task/mcp.html">MCP</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../zh/task/agent-skill.html">智能体技能</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/rag.html">RAG</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/hook.html">钩子系统</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../zh/task/memory.html">内存管理</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../zh/task/hitl.html">Human-in-the-Loop</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../zh/task/memory.html">记忆管理</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/plan.html">计划</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/state.html">状态管理</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/session.html">会话管理</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/multimodal.html">多模态</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/structured-output.html">结构化输出</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/task/studio.html">Studio</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../zh/task/agui.html">AG-UI 协议</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../zh/task/a2a.html">A2A 协议</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../zh/task/ai-coding.html">使用 AI 编程</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">多智能体</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/multi-agent/pipeline.html">管道</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/multi-agent/msghub.html">MsgHub</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../zh/multi-agent/agent-as-tool.html">Agent as Tool</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../zh/multi-agent/multiagent-debate.html">多智能体辩论</a></li>
 </ul>
 
@@ -419,28 +432,6 @@
 <li><p><strong>Ecosystem Integration</strong>: Use tools from the growing MCP ecosystem</p></li>
 <li><p><strong>Flexible Transport</strong>: Support for StdIO, SSE, and HTTP transports</p></li>
 </ul>
-</section>
-<section id="prerequisites">
-<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Link to this heading">¶</a></h2>
-<section id="maven-dependency">
-<h3>Maven Dependency<a class="headerlink" href="#maven-dependency" title="Link to this heading">¶</a></h3>
-<p>To use MCP features, you need to add the MCP SDK dependency to your project:</p>
-<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;dependency&gt;</span>
-<span class="w">    </span><span class="nt">&lt;groupId&gt;</span>io.modelcontextprotocol.sdk<span class="nt">&lt;/groupId&gt;</span>
-<span class="w">    </span><span class="nt">&lt;artifactId&gt;</span>mcp<span class="nt">&lt;/artifactId&gt;</span>
-<span class="w">    </span><span class="nt">&lt;version&gt;</span>0.14.1<span class="nt">&lt;/version&gt;</span>
-<span class="nt">&lt;/dependency&gt;</span>
-</pre></div>
-</div>
-<p><strong>Note</strong>: The MCP SDK is not automatically included in AgentScope. You must explicitly add it to your <code class="docutils literal notranslate"><span class="pre">pom.xml</span></code>.</p>
-</section>
-<section id="gradle-dependency">
-<h3>Gradle Dependency<a class="headerlink" href="#gradle-dependency" title="Link to this heading">¶</a></h3>
-<p>For Gradle projects:</p>
-<div class="highlight-gradle notranslate"><div class="highlight"><pre><span></span>implementation &#39;io.modelcontextprotocol.sdk:mcp:0.14.1&#39;
-</pre></div>
-</div>
-</section>
 </section>
 <section id="transport-types">
 <h2>Transport Types<a class="headerlink" href="#transport-types" title="Link to this heading">¶</a></h2>
@@ -546,6 +537,7 @@
 <div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">McpClientWrapper</span><span class="w"> </span><span class="n">sseClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">McpClientBuilder</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;remote-mcp&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">sseTransport</span><span class="p">(</span><span class="s">&quot;https://mcp.example.com/sse&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">header</span><span class="p">(</span><span class="s">&quot;Authorization&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Bearer &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">apiToken</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParam</span><span class="p">(</span><span class="s">&quot;queryKey&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">timeout</span><span class="p">(</span><span class="n">Duration</span><span class="p">.</span><span class="na">ofSeconds</span><span class="p">(</span><span class="mi">60</span><span class="p">))</span>
 <span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
 <span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
@@ -558,6 +550,7 @@
 <div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">McpClientWrapper</span><span class="w"> </span><span class="n">httpClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">McpClientBuilder</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;http-mcp&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">streamableHttpTransport</span><span class="p">(</span><span class="s">&quot;https://mcp.example.com/http&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">header</span><span class="p">(</span><span class="s">&quot;X-API-Key&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">apiKey</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParam</span><span class="p">(</span><span class="s">&quot;queryKey&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue&quot;</span><span class="p">)</span>
 <span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
 <span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
 </pre></div>
@@ -643,6 +636,36 @@
 </pre></div>
 </div>
 </section>
+<section id="query-parameters">
+<h3>Query Parameters<a class="headerlink" href="#query-parameters" title="Link to this heading">¶</a></h3>
+<p>Add URL query parameters for HTTP transports:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// Single parameter</span>
+<span class="n">McpClientWrapper</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">McpClientBuilder</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;mcp&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">sseTransport</span><span class="p">(</span><span class="s">&quot;https://mcp.example.com/sse&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParam</span><span class="p">(</span><span class="s">&quot;queryKey1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue1&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParam</span><span class="p">(</span><span class="s">&quot;queryKey2&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue2&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
+
+<span class="c1">// Multiple parameters at once</span>
+<span class="n">McpClientWrapper</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">McpClientBuilder</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;mcp&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">streamableHttpTransport</span><span class="p">(</span><span class="s">&quot;https://mcp.example.com/http&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParams</span><span class="p">(</span><span class="n">Map</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;queryKey1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryKey2&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue2&quot;</span><span class="p">))</span>
+<span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
+
+<span class="c1">// Merge with existing URL parameters (additional params take precedence)</span>
+<span class="n">McpClientWrapper</span><span class="w"> </span><span class="n">client</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">McpClientBuilder</span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;mcp&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">sseTransport</span><span class="p">(</span><span class="s">&quot;https://mcp.example.com/sse?version=v1&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">queryParam</span><span class="p">(</span><span class="s">&quot;queryKey&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;queryValue&quot;</span><span class="p">)</span><span class="w">  </span><span class="c1">// Result: ?version=v1&amp;queryKey=queryValue</span>
+<span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
+</pre></div>
+</div>
+<blockquote>
+<div><p><strong>Note</strong>: Query parameters only apply to HTTP transports (SSE and HTTP). They are ignored for StdIO transport.</p>
+</div></blockquote>
+</section>
 <section id="synchronous-vs-asynchronous-clients">
 <h3>Synchronous vs Asynchronous Clients<a class="headerlink" href="#synchronous-vs-asynchronous-clients" title="Link to this heading">¶</a></h3>
 <div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// Asynchronous client (recommended)</span>
@@ -677,15 +700,68 @@
 </div>
 </section>
 </section>
+<section id="higress-ai-gateway-integration">
+<h2>Higress AI Gateway Integration<a class="headerlink" href="#higress-ai-gateway-integration" title="Link to this heading">¶</a></h2>
+<p>AgentScope provides a Higress AI Gateway extension that enables unified access to MCP tools through the Higress gateway, with semantic search capabilities to automatically select the most suitable tools.</p>
+<section id="add-dependency">
+<h3>Add Dependency<a class="headerlink" href="#add-dependency" title="Link to this heading">¶</a></h3>
+<div class="highlight-xml notranslate"><div class="highlight"><pre><span></span><span class="nt">&lt;dependency&gt;</span>
+<span class="w">    </span><span class="nt">&lt;groupId&gt;</span>io.agentscope<span class="nt">&lt;/groupId&gt;</span>
+<span class="w">    </span><span class="nt">&lt;artifactId&gt;</span>agentscope-extensions-higress<span class="nt">&lt;/artifactId&gt;</span>
+<span class="w">    </span><span class="nt">&lt;version&gt;</span>${agentscope.version}<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</pre></div>
+</div>
+</section>
+<section id="basic-usage">
+<h3>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading">¶</a></h3>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.extensions.higress.HigressMcpClientBuilder</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.extensions.higress.HigressMcpClientWrapper</span><span class="p">;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">io.agentscope.extensions.higress.HigressToolkit</span><span class="p">;</span>
+
+<span class="c1">// 1. Create Higress MCP client</span>
+<span class="n">HigressMcpClientWrapper</span><span class="w"> </span><span class="n">higressClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HigressMcpClientBuilder</span>
+<span class="w">        </span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;higress&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">streamableHttpEndpoint</span><span class="p">(</span><span class="s">&quot;your higress mcp server endpoint&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
+
+<span class="c1">// 2. Register with HigressToolkit</span>
+<span class="n">HigressToolkit</span><span class="w"> </span><span class="n">toolkit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">HigressToolkit</span><span class="p">();</span>
+<span class="n">toolkit</span><span class="p">.</span><span class="na">registerMcpClient</span><span class="p">(</span><span class="n">higressClient</span><span class="p">).</span><span class="na">block</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="enable-semantic-tool-search">
+<h3>Enable Semantic Tool Search<a class="headerlink" href="#enable-semantic-tool-search" title="Link to this heading">¶</a></h3>
+<p>Use the <code class="docutils literal notranslate"><span class="pre">toolSearch()</span></code> method to enable semantic search. Higress will automatically select the most relevant tools for your query:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="c1">// Enable tool search, return top 5 most relevant tools</span>
+<span class="n">HigressMcpClientWrapper</span><span class="w"> </span><span class="n">higressClient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">HigressMcpClientBuilder</span>
+<span class="w">        </span><span class="p">.</span><span class="na">create</span><span class="p">(</span><span class="s">&quot;higress&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">streamableHttpEndpoint</span><span class="p">(</span><span class="s">&quot;http://your-higress-gateway/mcp-servers/union-tools-search&quot;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="na">toolSearch</span><span class="p">(</span><span class="s">&quot;query weather and map information&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span><span class="w">  </span><span class="c1">// query and topK</span>
+<span class="w">        </span><span class="p">.</span><span class="na">buildAsync</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="na">block</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="higress-example">
+<h3>Higress Example<a class="headerlink" href="#higress-example" title="Link to this heading">¶</a></h3>
+<p>See the complete Higress example:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">agentscope-examples/quickstart/src/main/java/io/agentscope/examples/quickstart/HigressToolExample.java</span></code></p></li>
+</ul>
+</section>
+</section>
 <section id="complete-example">
 <h2>Complete Example<a class="headerlink" href="#complete-example" title="Link to this heading">¶</a></h2>
 <p>See the complete MCP example:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">examples/src/main/java/io/agentscope/examples/McpToolExample.java</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">agentscope-examples/quickstart/src/main/java/io/agentscope/examples/quickstart/McpToolExample.java</span></code></p></li>
 </ul>
 <p>Run the example:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>examples
-mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<span class="o">=</span><span class="s2">&quot;io.agentscope.examples.McpToolExample&quot;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>agentscope-examples/quickstart
+mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<span class="o">=</span><span class="s2">&quot;io.agentscope.examples.quickstart.McpToolExample&quot;</span>
 </pre></div>
 </div>
 </section>
@@ -715,12 +791,12 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="rag.html">
+          <a class="next-page" href="agent-skill.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">RAG (Retrieval-Augmented Generation)</div>
+                <div class="title">Agent Skills</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -744,7 +820,7 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
             Made with 
             <a href="https://github.com/pradyunsg/furo">Furo</a>
             <div class="last-updated">
-              Last updated on 2025-12-12</div>
+              Last updated on 2025-12-26</div>
           </div>
           <div class="right-details">
             <div class="icons">
@@ -781,11 +857,6 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
             <ul>
 <li><a class="reference internal" href="#">MCP (Model Context Protocol)</a><ul>
 <li><a class="reference internal" href="#what-is-mcp">What is MCP?</a></li>
-<li><a class="reference internal" href="#prerequisites">Prerequisites</a><ul>
-<li><a class="reference internal" href="#maven-dependency">Maven Dependency</a></li>
-<li><a class="reference internal" href="#gradle-dependency">Gradle Dependency</a></li>
-</ul>
-</li>
 <li><a class="reference internal" href="#transport-types">Transport Types</a></li>
 <li><a class="reference internal" href="#quick-start">Quick Start</a><ul>
 <li><a class="reference internal" href="#connect-to-mcp-server">1. Connect to MCP Server</a></li>
@@ -809,12 +880,20 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
 <li><a class="reference internal" href="#configuration-options">Configuration Options</a><ul>
 <li><a class="reference internal" href="#timeouts">Timeouts</a></li>
 <li><a class="reference internal" href="#http-headers">HTTP Headers</a></li>
+<li><a class="reference internal" href="#query-parameters">Query Parameters</a></li>
 <li><a class="reference internal" href="#synchronous-vs-asynchronous-clients">Synchronous vs Asynchronous Clients</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#managing-mcp-clients">Managing MCP Clients</a><ul>
 <li><a class="reference internal" href="#list-tools-from-mcp-server">List Tools from MCP Server</a></li>
 <li><a class="reference internal" href="#remove-mcp-client">Remove MCP Client</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#higress-ai-gateway-integration">Higress AI Gateway Integration</a><ul>
+<li><a class="reference internal" href="#add-dependency">Add Dependency</a></li>
+<li><a class="reference internal" href="#basic-usage">Basic Usage</a></li>
+<li><a class="reference internal" href="#enable-semantic-tool-search">Enable Semantic Tool Search</a></li>
+<li><a class="reference internal" href="#higress-example">Higress Example</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#complete-example">Complete Example</a></li>
@@ -829,7 +908,7 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
       
     </aside>
   </div>
-</div><script src="../../_static/documentation_options.js?v=a8e58a58"></script>
+</div><script src="../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/furo.js?v=46bd48cc"></script>
@@ -846,6 +925,6 @@ mvn<span class="w"> </span>exec:java<span class="w"> </span>-Dexec.mainClass<spa
     <script async="async" src="../../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
-    <script src="../../_static/language.js?v=c58c2c05"></script>
+    <script src="../../_static/language.js?v=26e4e812"></script>
     </body>
 </html>
