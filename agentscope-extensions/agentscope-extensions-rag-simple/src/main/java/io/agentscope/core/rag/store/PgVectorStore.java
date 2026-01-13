@@ -24,7 +24,6 @@ import io.agentscope.core.rag.model.DocumentMetadata;
 import io.agentscope.core.rag.store.dto.SearchDocumentDto;
 import io.agentscope.core.util.JsonUtils;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,7 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
@@ -46,11 +45,14 @@ import reactor.core.scheduler.Schedulers;
  * with the pgvector extension. It implements the VDBStoreBase interface to provide
  * a unified API for vector storage operations.
  *
+ * <p>This implementation uses a {@link DataSource} for database connections, allowing
+ * users to choose their preferred connection pool implementation (HikariCP, Druid, etc.)
+ * or use Spring-managed DataSources.
+ *
  * <p>In PostgreSQL with pgvector, we use a table to store the vectors and metadata,
  * including the document ID, chunk ID, content, and custom payload as JSONB.
  *
- * <p>This implementation uses the pgvector JDBC driver (com.pgvector:pgvector). To use this
- * class, add the following dependencies:
+ * <p>This implementation requires the following dependencies:
  *
  * <pre>{@code
  * <dependency>
@@ -73,11 +75,10 @@ import reactor.core.scheduler.Schedulers;
  *
  * <p>Example usage:
  * <pre>{@code
- * // Using builder with full configuration (recommended)
+ * // Using builder with DataSource (recommended)
+ * DataSource dataSource = ... // HikariCP, Druid, or Spring-managed DataSource
  * try (PgVectorStore store = PgVectorStore.builder()
- *         .jdbcUrl("jdbc:postgresql://localhost:5432/mydb")
- *         .username("postgres")
- *         .password("password")
+ *         .dataSource(dataSource)
  *         .schema("my_schema")  // optional, defaults to "public"
  *         .tableName("embeddings")
  *         .dimensions(1024)
@@ -87,20 +88,15 @@ import reactor.core.scheduler.Schedulers;
  *     List<Document> results = store.search(searchDto).block();
  * }
  *
- * // Using static factory method (simpler, uses defaults)
- * try (PgVectorStore store = PgVectorStore.create(
- *         "jdbc:postgresql://localhost:5432/mydb",
- *         "postgres", "password", "embeddings", 1024)) {
+ * // Using static factory method (simpler)
+ * try (PgVectorStore store = PgVectorStore.create(dataSource, "embeddings", 1024)) {
  *     store.add(documents).block();
  *     List<Document> results = store.search(searchDto).block();
  * }
  * }</pre>
  *
- * <p>Note: The JDBC URL should follow PostgreSQL format:
- * <ul>
- *   <li>jdbc:postgresql://host:port/database</li>
- *   <li>jdbc:postgresql://localhost:5432/vectordb</li>
- * </ul>
+ * <p>Note: The DataSource is managed externally (by the caller or Spring container).
+ * This implementation does NOT close the DataSource when {@link #close()} is called.
  */
 public class PgVectorStore implements VDBStoreBase, AutoCloseable {
 
@@ -116,12 +112,11 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
 
     private static final String DEFAULT_SCHEMA = "public";
 
-    private final String jdbcUrl;
+    private final DataSource dataSource;
     private final String schema;
     private final String tableName;
     private final int dimensions;
     private final DistanceType distanceType;
-    private final Connection connection;
     private volatile boolean closed = false;
 
     /**
@@ -145,10 +140,20 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
             this.operator = operator;
         }
 
+        /**
+         * Gets the index operator class name for this distance type.
+         *
+         * @return the index operator class name (e.g., "vector_cosine_ops")
+         */
         public String getIndexOps() {
             return indexOps;
         }
 
+        /**
+         * Gets the SQL operator for this distance type.
+         *
+         * @return the SQL operator (e.g., "{@code <=>}")
+         */
         public String getOperator() {
             return operator;
         }
@@ -158,59 +163,29 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
      * Creates a new PgVectorStore using the builder configuration.
      *
      * @param builder the builder instance
-     * @throws VectorStoreException if client initialization or table creation fails
+     * @throws VectorStoreException if table creation fails
      */
     private PgVectorStore(Builder builder) throws VectorStoreException {
-        this.jdbcUrl = builder.jdbcUrl;
+        this.dataSource = builder.dataSource;
         this.schema = builder.schema != null ? builder.schema : DEFAULT_SCHEMA;
         this.tableName = builder.tableName;
         this.dimensions = builder.dimensions;
         this.distanceType = builder.distanceType;
 
-        Connection tempConnection = null;
-
         try {
-            // Build connection properties
-            Properties props = new Properties();
-            if (builder.username != null) {
-                props.setProperty("user", builder.username);
+            // Ensure table exists using a connection from the DataSource
+            try (Connection conn = dataSource.getConnection()) {
+                // Register pgvector type for this connection
+                PGvector.addVectorType(conn);
+                ensureTable(conn);
             }
-            if (builder.password != null) {
-                props.setProperty("password", builder.password);
-            }
-            if (builder.connectionTimeoutMs > 0) {
-                props.setProperty(
-                        "connectTimeout", String.valueOf(builder.connectionTimeoutMs / 1000));
-            }
-
-            // Create connection
-            tempConnection = DriverManager.getConnection(jdbcUrl, props);
-
-            // Register pgvector type
-            PGvector.addVectorType(tempConnection);
 
             log.debug(
-                    "Initialized PostgreSQL connection: url={}, schema={}, table={}",
-                    jdbcUrl,
+                    "PgVectorStore initialized: schema={}, table={}, dimensions={}",
                     schema,
-                    tableName);
-
-            // Ensure table exists
-            ensureTable(tempConnection);
-
-            // Assign to final field only after successful initialization
-            this.connection = tempConnection;
-
-            log.debug("PgVectorStore initialized successfully for table: {}", tableName);
+                    tableName,
+                    dimensions);
         } catch (Exception e) {
-            // Clean up if initialization fails
-            try {
-                if (tempConnection != null) {
-                    tempConnection.close();
-                }
-            } catch (Exception cleanupException) {
-                log.warn("Error closing connection after initialization failure", cleanupException);
-            }
             throw new VectorStoreException("Failed to initialize PgVectorStore", e);
         }
     }
@@ -218,21 +193,33 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
     /**
      * Creates a new PgVectorStore with minimal configuration.
      *
-     * @param jdbcUrl the PostgreSQL JDBC URL (e.g., "jdbc:postgresql://localhost:5432/mydb")
-     * @param username the database username
-     * @param password the database password
+     * @param dataSource the DataSource for database connections (e.g., HikariDataSource)
+     * @param tableName the name of the table to use
+     * @param dimensions the dimension of vectors that will be stored
+     * @return a new PgVectorStore instance
+     * @throws VectorStoreException if initialization fails
+     */
+    public static PgVectorStore create(DataSource dataSource, String tableName, int dimensions)
+            throws VectorStoreException {
+        return builder().dataSource(dataSource).tableName(tableName).dimensions(dimensions).build();
+    }
+
+    /**
+     * Creates a new PgVectorStore with schema configuration.
+     *
+     * @param dataSource the DataSource for database connections
+     * @param schema the database schema (e.g., "public", "my_schema")
      * @param tableName the name of the table to use
      * @param dimensions the dimension of vectors that will be stored
      * @return a new PgVectorStore instance
      * @throws VectorStoreException if initialization fails
      */
     public static PgVectorStore create(
-            String jdbcUrl, String username, String password, String tableName, int dimensions)
+            DataSource dataSource, String schema, String tableName, int dimensions)
             throws VectorStoreException {
         return builder()
-                .jdbcUrl(jdbcUrl)
-                .username(username)
-                .password(password)
+                .dataSource(dataSource)
+                .schema(schema)
                 .tableName(tableName)
                 .dimensions(dimensions)
                 .build();
@@ -351,9 +338,9 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
     }
 
     /**
-     * Gets the underlying JDBC connection for advanced operations.
+     * Gets a connection from the DataSource for advanced operations.
      *
-     * <p>This method provides access to the connection for users who need to perform
+     * <p>This method provides access to a database connection for users who need to perform
      * operations beyond the standard VDBStoreBase interface, such as:
      * <ul>
      *   <li>Custom index configuration</li>
@@ -362,12 +349,39 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
      *   <li>Batch operations</li>
      * </ul>
      *
-     * @return the Connection instance
-     * @throws VectorStoreException if the store has been closed
+     * <p><b>Important:</b> The caller is responsible for closing the returned connection
+     * to return it to the pool. Use try-with-resources:
+     * <pre>{@code
+     * try (Connection conn = store.getConnection()) {
+     *     // Use connection
+     * }
+     * }</pre>
+     *
+     * @return a Connection from the DataSource
+     * @throws VectorStoreException if the store has been closed or connection fails
      */
     public Connection getConnection() throws VectorStoreException {
         ensureNotClosed();
-        return connection;
+        try {
+            Connection conn = dataSource.getConnection();
+            PGvector.addVectorType(conn);
+            return conn;
+        } catch (SQLException e) {
+            throw new VectorStoreException("Failed to get connection from DataSource", e);
+        }
+    }
+
+    /**
+     * Gets the underlying DataSource.
+     *
+     * <p>This provides access to the DataSource for advanced users who need direct access.
+     *
+     * @return the DataSource instance
+     * @throws VectorStoreException if the store has been closed
+     */
+    public DataSource getDataSource() throws VectorStoreException {
+        ensureNotClosed();
+        return dataSource;
     }
 
     /**
@@ -531,48 +545,54 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
                         COL_PAYLOAD,
                         COL_PAYLOAD);
 
-        try (PreparedStatement stmt = connection.prepareStatement(upsertSql)) {
-            for (Document document : documents) {
-                // Set ID
-                stmt.setString(1, document.getId());
+        try (Connection conn = dataSource.getConnection()) {
+            PGvector.addVectorType(conn);
 
-                // Convert double[] to PGvector
-                double[] embedding = document.getEmbedding();
-                float[] floatArray = new float[embedding.length];
-                for (int i = 0; i < embedding.length; i++) {
-                    floatArray[i] = (float) embedding[i];
+            try (PreparedStatement stmt = conn.prepareStatement(upsertSql)) {
+                for (Document document : documents) {
+                    // Set ID
+                    stmt.setString(1, document.getId());
+
+                    // Convert double[] to PGvector
+                    double[] embedding = document.getEmbedding();
+                    float[] floatArray = new float[embedding.length];
+                    for (int i = 0; i < embedding.length; i++) {
+                        floatArray[i] = (float) embedding[i];
+                    }
+                    stmt.setObject(2, new PGvector(floatArray));
+
+                    // Set metadata fields
+                    DocumentMetadata metadata = document.getMetadata();
+                    stmt.setString(3, metadata.getDocId());
+                    stmt.setString(4, metadata.getChunkId());
+
+                    // Serialize content to JSON string
+                    String contentJson;
+                    try {
+                        contentJson = JsonUtils.getJsonCodec().toJson(metadata.getContent());
+                    } catch (Exception e) {
+                        log.warn("Failed to serialize content, using text representation", e);
+                        contentJson = metadata.getContentText();
+                    }
+                    stmt.setString(5, contentJson);
+
+                    // Serialize custom payload to JSON
+                    Map<String, Object> customPayload = metadata.getPayload();
+                    String payloadJson =
+                            customPayload != null && !customPayload.isEmpty()
+                                    ? JsonUtils.getJsonCodec().toJson(customPayload)
+                                    : "{}";
+                    stmt.setString(6, payloadJson);
+
+                    stmt.addBatch();
                 }
-                stmt.setObject(2, new PGvector(floatArray));
 
-                // Set metadata fields
-                DocumentMetadata metadata = document.getMetadata();
-                stmt.setString(3, metadata.getDocId());
-                stmt.setString(4, metadata.getChunkId());
-
-                // Serialize content to JSON string
-                String contentJson;
-                try {
-                    contentJson = JsonUtils.getJsonCodec().toJson(metadata.getContent());
-                } catch (Exception e) {
-                    log.warn("Failed to serialize content, using text representation", e);
-                    contentJson = metadata.getContentText();
-                }
-                stmt.setString(5, contentJson);
-
-                // Serialize custom payload to JSON
-                Map<String, Object> customPayload = metadata.getPayload();
-                String payloadJson =
-                        customPayload != null && !customPayload.isEmpty()
-                                ? JsonUtils.getJsonCodec().toJson(customPayload)
-                                : "{}";
-                stmt.setString(6, payloadJson);
-
-                stmt.addBatch();
+                int[] results = stmt.executeBatch();
+                log.debug(
+                        "Inserted/Updated {} documents into table '{}'",
+                        results.length,
+                        fullTableName);
             }
-
-            int[] results = stmt.executeBatch();
-            log.debug(
-                    "Inserted/Updated {} documents into table '{}'", results.length, fullTableName);
         }
     }
 
@@ -616,31 +636,35 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
 
         List<Document> results = new ArrayList<>();
 
-        try (PreparedStatement stmt = connection.prepareStatement(searchSql)) {
-            stmt.setObject(1, queryVector);
-            stmt.setInt(2, limit);
+        try (Connection conn = dataSource.getConnection()) {
+            PGvector.addVectorType(conn);
 
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    try {
-                        // Get distance and convert to similarity score
-                        double distance = rs.getDouble("distance");
+            try (PreparedStatement stmt = conn.prepareStatement(searchSql)) {
+                stmt.setObject(1, queryVector);
+                stmt.setInt(2, limit);
 
-                        // Convert distance to similarity score based on distance type
-                        double score = convertDistanceToScore(distance);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        try {
+                            // Get distance and convert to similarity score
+                            double distance = rs.getDouble("distance");
 
-                        // Apply score threshold if specified
-                        if (scoreThreshold != null && score < scoreThreshold) {
-                            continue;
+                            // Convert distance to similarity score based on distance type
+                            double score = convertDistanceToScore(distance);
+
+                            // Apply score threshold if specified
+                            if (scoreThreshold != null && score < scoreThreshold) {
+                                continue;
+                            }
+
+                            // Reconstruct document from result
+                            Document document = reconstructDocumentFromResult(rs, score);
+                            if (document != null) {
+                                results.add(document);
+                            }
+                        } catch (Exception e) {
+                            log.warn("Failed to reconstruct document from search result", e);
                         }
-
-                        // Reconstruct document from result
-                        Document document = reconstructDocumentFromResult(rs, score);
-                        if (document != null) {
-                            results.add(document);
-                        }
-                    } catch (Exception e) {
-                        log.warn("Failed to reconstruct document from search result", e);
                     }
                 }
             }
@@ -745,7 +769,8 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
         String fullTableName = getFullTableName();
         String deleteSql = String.format("DELETE FROM %s WHERE %s = ?", fullTableName, COL_DOC_ID);
 
-        try (PreparedStatement stmt = connection.prepareStatement(deleteSql)) {
+        try (Connection conn = dataSource.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(deleteSql)) {
             stmt.setString(1, docId);
             int deletedCount = stmt.executeUpdate();
             log.debug("Deleted {} documents from table '{}'", deletedCount, fullTableName);
@@ -754,25 +779,16 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
     }
 
     /**
-     * Gets the JDBC URL.
+     * Gets the database schema name where the table is located.
      *
-     * @return the JDBC URL
-     */
-    public String getJdbcUrl() {
-        return jdbcUrl;
-    }
-
-    /**
-     * Gets the schema name.
-     *
-     * @return the schema name
+     * @return the schema name (defaults to "public")
      */
     public String getSchema() {
         return schema;
     }
 
     /**
-     * Gets the table name.
+     * Gets the table name used for storing vectors.
      *
      * @return the table name
      */
@@ -781,9 +797,11 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
     }
 
     /**
-     * Gets the vector dimensions.
+     * Gets the vector dimensions configured for this store.
      *
-     * @return the dimensions
+     * <p>All vectors stored and queried must have exactly this many dimensions.
+     *
+     * @return the number of dimensions
      */
     public int getDimensions() {
         return dimensions;
@@ -792,6 +810,13 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
     /**
      * Gets the distance type used for similarity search.
      *
+     * <p>This determines how vector similarity is calculated:
+     * <ul>
+     *   <li>COSINE - Cosine similarity (default, recommended for text embeddings)</li>
+     *   <li>L2 - Euclidean distance</li>
+     *   <li>INNER_PRODUCT - Inner product (dot product)</li>
+     * </ul>
+     *
      * @return the distance type
      */
     public DistanceType getDistanceType() {
@@ -799,24 +824,15 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
     }
 
     /**
-     * Closes the PostgreSQL connection and releases all resources.
+     * Closes this store and releases any resources.
      *
-     * <p>This method closes the JDBC connection, releasing all database resources.
-     * This method is idempotent and can be called multiple times safely.
+     * <p>Note: The DataSource is managed externally (by the caller or Spring container),
+     * so it is NOT closed when this method is called. The caller is responsible for
+     * managing the DataSource lifecycle.
+     *
+     * <p>This method is idempotent and can be called multiple times safely.
      *
      * <p>After closing, all operations on this store will fail with a VectorStoreException.
-     * It's recommended to use try-with-resources for automatic resource management:
-     *
-     * <pre>{@code
-     * try (PgVectorStore store = PgVectorStore.builder()
-     *         .jdbcUrl("jdbc:postgresql://localhost:5432/mydb")
-     *         .tableName("embeddings")
-     *         .dimensions(1024)
-     *         .build()) {
-     *     store.add(documents).block();
-     *     // Store is automatically closed here
-     * }
-     * }</pre>
      */
     @Override
     public void close() {
@@ -830,22 +846,14 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
             }
 
             closed = true;
-
-            try {
-                if (connection != null && !connection.isClosed()) {
-                    log.debug("Closing PostgreSQL connection for table: {}", getFullTableName());
-                    connection.close();
-                }
-            } catch (Exception e) {
-                log.warn("Error closing PostgreSQL connection", e);
-            }
-
             log.debug("PgVectorStore closed for table: {}", getFullTableName());
         }
     }
 
     /**
      * Checks if this store has been closed.
+     *
+     * <p>After closing, all operations will throw VectorStoreException.
      *
      * @return true if the store has been closed, false otherwise
      */
@@ -858,60 +866,44 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
      *
      * <p>Example usage:
      * <pre>{@code
+     * // Using HikariCP DataSource
+     * HikariDataSource dataSource = new HikariDataSource();
+     * dataSource.setJdbcUrl("jdbc:postgresql://localhost:5432/mydb");
+     * dataSource.setUsername("postgres");
+     * dataSource.setPassword("password");
+     *
      * PgVectorStore store = PgVectorStore.builder()
-     *     .jdbcUrl("jdbc:postgresql://localhost:5432/mydb")
-     *     .username("postgres")
-     *     .password("password")
+     *     .dataSource(dataSource)
      *     .schema("my_schema")
      *     .tableName("embeddings")
      *     .dimensions(1024)
      *     .distanceType(PgVectorStore.DistanceType.COSINE)
-     *     .connectionTimeoutMs(30000)
      *     .build();
      * }</pre>
      */
     public static class Builder {
-        private String jdbcUrl;
-        private String username;
-        private String password;
+        private DataSource dataSource;
         private String schema;
         private String tableName;
         private int dimensions;
         private DistanceType distanceType = DistanceType.COSINE;
-        private long connectionTimeoutMs = 30000L;
 
         private Builder() {}
 
         /**
-         * Sets the PostgreSQL JDBC URL.
+         * Sets the DataSource for database connections.
          *
-         * @param jdbcUrl the JDBC URL (e.g., "jdbc:postgresql://localhost:5432/mydb")
+         * <p>Required. The DataSource should be properly configured with connection pooling
+         * (e.g., HikariCP, Druid) for optimal performance.
+         *
+         * <p>Note: The DataSource lifecycle is managed externally. This store does NOT
+         * close the DataSource when {@link PgVectorStore#close()} is called.
+         *
+         * @param dataSource the DataSource to use
          * @return this builder
          */
-        public Builder jdbcUrl(String jdbcUrl) {
-            this.jdbcUrl = jdbcUrl;
-            return this;
-        }
-
-        /**
-         * Sets the database username.
-         *
-         * @param username the username
-         * @return this builder
-         */
-        public Builder username(String username) {
-            this.username = username;
-            return this;
-        }
-
-        /**
-         * Sets the database password.
-         *
-         * @param password the password
-         * @return this builder
-         */
-        public Builder password(String password) {
-            this.password = password;
+        public Builder dataSource(DataSource dataSource) {
+            this.dataSource = dataSource;
             return this;
         }
 
@@ -964,31 +956,18 @@ public class PgVectorStore implements VDBStoreBase, AutoCloseable {
         }
 
         /**
-         * Sets the connection timeout in milliseconds.
-         *
-         * <p>Default is 30000 (30 seconds). Set to 0 or negative to disable timeout.
-         *
-         * @param connectionTimeoutMs the connection timeout in milliseconds
-         * @return this builder
-         */
-        public Builder connectionTimeoutMs(long connectionTimeoutMs) {
-            this.connectionTimeoutMs = connectionTimeoutMs;
-            return this;
-        }
-
-        /**
          * Builds a new PgVectorStore instance.
          *
-         * <p>The database connection is established immediately during construction. If the
-         * connection fails or the table cannot be created, a VectorStoreException is thrown.
+         * <p>The table is created (if not exists) during construction. If the table
+         * creation fails, a VectorStoreException is thrown.
          *
          * @return a new PgVectorStore instance
          * @throws IllegalArgumentException if required parameters are invalid
-         * @throws VectorStoreException if connection initialization or table creation fails
+         * @throws VectorStoreException if table creation fails
          */
         public PgVectorStore build() throws VectorStoreException {
-            if (jdbcUrl == null || jdbcUrl.trim().isEmpty()) {
-                throw new IllegalArgumentException("JDBC URL cannot be null or empty");
+            if (dataSource == null) {
+                throw new IllegalArgumentException("DataSource cannot be null");
             }
             if (tableName == null || tableName.trim().isEmpty()) {
                 throw new IllegalArgumentException("Table name cannot be null or empty");
